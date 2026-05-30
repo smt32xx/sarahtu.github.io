@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse Analytics — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root {
+  --bg:       #0C0E12;
+  --surface:  #131720;
+  --surface2: #1A2030;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(255,255,255,0.10);
+  --text:     #E8EAF0;
+  --text2:    #7A8299;
+  --text3:    #4A5068;
+  --blue:     #4F8EF7;
+  --blue2:    #2D6EE8;
+  --green:    #34D399;
+  --red:      #F87171;
+  --amber:    #FBBF24;
+  --purple:   #A78BFA;
+  --sidebar:  200px;
+}
+html { font-size: 14px; }
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 50; padding: 1.5rem 0;
+  transition: transform 0.3s;
+}
+.sidebar-logo {
+  padding: 0 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.logo-mark {
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.logo-icon {
+  width: 28px; height: 28px;
+  background: var(--blue);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: white;
+}
+.logo-text {
+  font-size: 0.95rem; font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.logo-sub {
+  font-size: 0.62rem; font-weight: 400;
+  color: var(--text3); letter-spacing: 0.05em;
+  text-transform: uppercase; margin-top: 0.15rem;
+}
+.nav-group { padding: 0 0.75rem; margin-bottom: 0.25rem; }
+.nav-label {
+  font-size: 0.6rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3); padding: 0.5rem 0.5rem 0.35rem;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--text2); cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 1px;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: rgba(79,142,247,0.12); color: var(--blue); }
+.nav-item .icon { font-size: 1rem; width: 18px; text-align: center; }
+.nav-badge {
+  margin-left: auto; font-size: 0.6rem; font-weight: 700;
+  background: var(--blue); color: white;
+  padding: 0.1rem 0.4rem; border-radius: 10px;
+}
+.sidebar-bottom {
+  margin-top: auto; padding: 1rem 1.25rem 0;
+  border-top: 1px solid var(--border);
+}
+.user-chip {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.6rem 0;
+}
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.user-name { font-size: 0.8rem; font-weight: 600; }
+.user-role { font-size: 0.65rem; color: var(--text3); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar);
+  flex: 1; display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky; top: 0; z-index: 40;
+}
+.topbar-left { display: flex; align-items: center; gap: 1rem; }
+.page-title { font-size: 0.9rem; font-weight: 600; }
+.breadcrumb { font-size: 0.75rem; color: var(--text3); }
+.topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+.date-range-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); font-family: 'Syne', sans-serif;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 0.45rem 0.9rem; border-radius: 6px;
+  cursor: pointer; transition: border-color 0.2s;
+}
+.date-range-btn:hover { border-color: var(--blue); }
+.date-range-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(79,142,247,0.08); }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; position: relative;
+}
+.icon-btn:hover { border-color: var(--border2); color: var(--text); }
+.notif-dot {
+  position: absolute; top: 4px; right: 4px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--blue); border: 1px solid var(--surface);
+}
+
+/* ── CONTENT ── */
+.content { padding: 1.75rem 2rem; flex: 1; }
+
+/* ── KPI CARDS ── */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+  animation: cardIn 0.5s both;
+}
+.kpi-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.kpi-card:nth-child(1){animation-delay:0.05s}
+.kpi-card:nth-child(2){animation-delay:0.1s}
+.kpi-card:nth-child(3){animation-delay:0.15s}
+.kpi-card:nth-child(4){animation-delay:0.2s}
+@keyframes cardIn {
+  from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none}
+}
+.kpi-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.9rem; }
+.kpi-label { font-size: 0.72rem; font-weight: 500; color: var(--text2); letter-spacing: 0.03em; }
+.kpi-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+}
+.kpi-value {
+  font-size: 1.7rem; font-weight: 700; letter-spacing: -0.03em;
+  line-height: 1; margin-bottom: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-sub { display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; }
+.badge-up { color: var(--green); }
+.badge-down { color: var(--red); }
+.kpi-sparkline { margin-top: 1rem; }
+.kpi-glow {
+  position: absolute; bottom: -20px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  opacity: 0.06; pointer-events: none;
+}
+
+/* ── CHARTS ROW ── */
+.charts-row {
+  display: grid; grid-template-columns: 1.6fr 1fr;
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.5rem;
+  animation: cardIn 0.5s 0.25s both;
+}
+.chart-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.chart-title { font-size: 0.87rem; font-weight: 600; margin-bottom: 0.2rem; }
+.chart-subtitle { font-size: 0.7rem; color: var(--text3); }
+.chart-legend { display: flex; gap: 1rem; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+.chart-tabs { display: flex; gap: 0.25rem; }
+.chart-tab {
+  font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 500;
+  padding: 0.3rem 0.65rem; border-radius: 4px;
+  border: none; cursor: pointer;
+  background: transparent; color: var(--text3);
+  transition: all 0.15s;
+}
+.chart-tab:hover { color: var(--text2); }
+.chart-tab.active { background: var(--surface2); color: var(--text); }
+canvas { display: block; }
+
+/* ── DONUT STATS ── */
+.donut-stats {
+  display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;
+}
+.donut-stat-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.donut-stat-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--text2); }
+.donut-stat-bar-wrap { flex: 1; margin: 0 0.75rem; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.donut-stat-bar { height: 100%; border-radius: 2px; transition: width 1s ease; }
+.donut-stat-val { font-size: 0.78rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; min-width: 36px; text-align: right; }
+
+/* ── BOTTOM ROW ── */
+.bottom-row {
+  display: grid; grid-template-columns: 1.2fr 1fr;
+  gap: 1rem;
+}
+
+/* ── TABLE ── */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  animation: cardIn 0.5s 0.35s both;
+}
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.search-input {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.75rem;
+  font-size: 0.75rem; color: var(--text2);
+  cursor: text;
+}
+table { width: 100%; border-collapse: collapse; }
+thead tr { border-bottom: 1px solid var(--border); }
+th {
+  font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text3); padding: 0.75rem 1.5rem;
+  text-align: left;
+}
+td {
+  padding: 0.85rem 1.5rem;
+  font-size: 0.8rem; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { transition: background 0.15s; }
+tbody tr:hover { background: var(--surface2); }
+tbody tr:last-child td { border-bottom: none; }
+.td-name { display: flex; align-items: center; gap: 0.6rem; }
+.td-avatar {
+  width: 26px; height: 26px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.td-name-text { font-weight: 600; color: var(--text); font-size: 0.8rem; }
+.td-sub { font-size: 0.67rem; color: var(--text3); }
+.td-mono { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.65rem; font-weight: 600;
+  padding: 0.22rem 0.6rem; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.status-pill::before { content:''; width:5px; height:5px; border-radius:50%; }
+.pill-green { background: rgba(52,211,153,0.1); color: var(--green); }
+.pill-green::before { background: var(--green); }
+.pill-amber { background: rgba(251,191,36,0.1); color: var(--amber); }
+.pill-amber::before { background: var(--amber); }
+.pill-red { background: rgba(248,113,113,0.1); color: var(--red); }
+.pill-red::before { background: var(--red); }
+.pill-blue { background: rgba(79,142,247,0.1); color: var(--blue); }
+.pill-blue::before { background: var(--blue); }
+
+/* ── ACTIVITY FEED ── */
+.activity-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  animation: cardIn 0.5s 0.4s both;
+  display: flex; flex-direction: column;
+}
+.activity-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.activity-list { padding: 0.5rem 0; overflow-y: auto; flex: 1; }
+.activity-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.15s;
+}
+.activity-item:hover { background: var(--surface2); }
+.activity-dot-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 3px; flex-shrink: 0;
+}
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.activity-line { width: 1px; flex: 1; background: var(--border); min-height: 20px; margin-top: 3px; }
+.activity-text { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
+.activity-text strong { color: var(--text); font-weight: 600; }
+.activity-time { font-size: 0.67rem; color: var(--text3); margin-top: 0.2rem; font-family: 'JetBrains Mono', monospace; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  :root { --sidebar: 60px; }
+  .logo-text, .logo-sub, .nav-label, .nav-item span:not(.icon), .nav-badge, .user-name, .user-role { display: none; }
+  .nav-item { justify-content: center; padding: 0.55rem; }
+  .sidebar-logo { padding: 0 0; display: flex; justify-content: center; }
+  .user-chip { justify-content: center; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row, .bottom-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .content { padding: 1rem; }
+  .topbar { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">P</div>
+      <div>
+        <div class="logo-text">Pulse</div>
+        <div class="logo-sub">Analytics</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Overview</div>
+    <button class="nav-item active" onclick="setNav(this)">
+      <span class="icon">▣</span><span>Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="setNav(this)">
+      <span class="icon">◈</span><span>Analytics</span>
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-item" onclick="setNav(this)">
+      <span class="icon">◎</span><span>Reports</span>
+    </button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Business</div>
+    <button class="nav-item" onclick="setNav(this)">
+      <span class="icon">⊞</span><span>Customers</span>
+    </button>
+    <button class="nav-item" onclick="setNav(this)">
+      <span class="icon">◷</span><span>Revenue</span>
+    </button>
+    <button class="nav-item" onclick="setNav(this)">
+      <span class="icon">⊕</span><span>Products</span>
+    </button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">System</div>
+    <button class="nav-item" onclick="setNav(this)">
+      <span class="icon">⊙</span><span>Settings</span>
+    </button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="user-avatar">ST</div>
+      <div>
+        <div class="user-name">Sarah Tu</div>
+        <div class="user-role">Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="breadcrumb">Pulse Analytics · Overview</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="date-range-btn active" onclick="setRange('7D',this)">7D</button>
+      <button class="date-range-btn" onclick="setRange('30D',this)">30D</button>
+      <button class="date-range-btn" onclick="setRange('90D',this)">90D</button>
+      <button class="date-range-btn" onclick="setRange('1Y',this)">1Y</button>
+      <div class="icon-btn" title="Notifications">
+        🔔<div class="notif-dot"></div>
+      </div>
+      <div class="icon-btn" title="Export">↗</div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:var(--blue)"></div>
+        <div class="kpi-header">
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-icon" style="background:rgba(79,142,247,0.1)">💰</div>
+        </div>
+        <div class="kpi-value" id="kpi-rev">$0</div>
+        <div class="kpi-sub">
+          <span class="badge-up">↑ 12.5%</span>
+          <span style="color:var(--text3)">vs last period</span>
+        </div>
+        <div class="kpi-sparkline"><canvas id="spark-0" width="120" height="32"></canvas></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:var(--green)"></div>
+        <div class="kpi-header">
+          <div class="kpi-label">Active Users</div>
+          <div class="kpi-icon" style="background:rgba(52,211,153,0.1)">👥</div>
+        </div>
+        <div class="kpi-value" id="kpi-users">0</div>
+        <div class="kpi-sub">
+          <span class="badge-up">↑ 8.2%</span>
+          <span style="color:var(--text3)">vs last period</span>
+        </div>
+        <div class="kpi-sparkline"><canvas id="spark-1" width="120" height="32"></canvas></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:var(--amber)"></div>
+        <div class="kpi-header">
+          <div class="kpi-label">Conversion Rate</div>
+          <div class="kpi-icon" style="background:rgba(251,191,36,0.1)">⚡</div>
+        </div>
+        <div class="kpi-value" id="kpi-conv">0%</div>
+        <div class="kpi-sub">
+          <span class="badge-down">↓ 1.4%</span>
+          <span style="color:var(--text3)">vs last period</span>
+        </div>
+        <div class="kpi-sparkline"><canvas id="spark-2" width="120" height="32"></canvas></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-glow" style="background:var(--purple)"></div>
+        <div class="kpi-header">
+          <div class="kpi-label">Avg. Order Value</div>
+          <div class="kpi-icon" style="background:rgba(167,139,250,0.1)">📦</div>
+        </div>
+        <div class="kpi-value" id="kpi-aov">$0</div>
+        <div class="kpi-sub">
+          <span class="badge-up">↑ 5.7%</span>
+          <span style="color:var(--text3)">vs last period</span>
+        </div>
+        <div class="kpi-sparkline"><canvas id="spark-3" width="120" height="32"></canvas></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
+
+      <!-- Revenue Line Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Revenue Over Time</div>
+            <div class="chart-subtitle" id="rev-subtitle">Last 7 days · Updated just now</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem;">
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Revenue</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Target</div>
+            </div>
+            <div class="chart-tabs">
+              <button class="chart-tab active" onclick="switchChartTab('revenue','line',this)">Line</button>
+              <button class="chart-tab" onclick="switchChartTab('revenue','bar',this)">Bar</button>
+            </div>
+          </div>
+        </div>
+        <canvas id="revenue-chart" height="200"></canvas>
+      </div>
+
+      <!-- Donut / Channel breakdown -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Traffic Channels</div>
+            <div class="chart-subtitle">Source breakdown</div>
+          </div>
+        </div>
+        <canvas id="donut-chart" width="160" height="160" style="display:block;margin:0 auto"></canvas>
+        <div class="donut-stats" id="donut-stats" style="margin-top:1.25rem"></div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+
+      <!-- Transactions Table -->
+      <div class="table-card">
+        <div class="table-header">
+          <div>
+            <div class="chart-title">Recent Transactions</div>
+            <div class="chart-subtitle">Latest 6 orders</div>
+          </div>
+          <div class="search-input">🔍 Search…</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="tx-table"></tbody>
+        </table>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="activity-card">
+        <div class="activity-header">
+          <div>
+            <div class="chart-title">Live Activity</div>
+            <div class="chart-subtitle">Real-time events</div>
+          </div>
+          <div class="icon-btn" onclick="addActivity()" title="Refresh">↺</div>
+        </div>
+        <div class="activity-list" id="activity-list"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── DATA SETS
+const datasets = {
+  '7D': {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    revenue: [8400,9200,7800,11200,13400,10800,14200],
+    target:  [9000,9000,9000,11000,12000,11000,13000],
+    kpi: { rev:'$74,200', users:'3,842', conv:'4.7%', aov:'$128' }
+  },
+  '30D': {
+    labels: ['W1','W2','W3','W4'],
+    revenue: [42000,58000,51000,68000],
+    target:  [48000,52000,56000,62000],
+    kpi: { rev:'$219,000', users:'14,290', conv:'4.3%', aov:'$134' }
+  },
+  '90D': {
+    labels: ['Jan','Feb','Mar'],
+    revenue: [180000,210000,240000],
+    target:  [190000,200000,230000],
+    kpi: { rev:'$630,000', users:'42,100', conv:'4.6%', aov:'$141' }
+  },
+  '1Y': {
+    labels: ['Q1','Q2','Q3','Q4'],
+    revenue: [620000,710000,680000,820000],
+    target:  [600000,680000,700000,800000],
+    kpi: { rev:'$2.83M', users:'158,400', conv:'4.8%', aov:'$149' }
+  }
+};
+let currentRange = '7D';
+let revenueChartType = 'line';
+
+// ── SPARKLINE DATA
+const sparkData = [
+  [40,52,38,61,55,70,65,80,74,90],
+  [30,45,60,50,70,65,80,75,90,85],
+  [55,50,60,45,52,48,55,50,47,46],
+  [60,65,70,68,72,75,80,78,84,88]
+];
+
+// ── CHANNELS
+const channels = [
+  { label: 'Organic Search', value: 38, color: '#4F8EF7' },
+  { label: 'Direct',         value: 24, color: '#34D399' },
+  { label: 'Social Media',   value: 20, color: '#A78BFA' },
+  { label: 'Referral',       value: 18, color: '#FBBF24' }
+];
+
+// ── TRANSACTIONS
+const transactions = [
+  { name:'Acme Corp',     cat:'Enterprise', amount:'$4,200', status:'pill-green', statusText:'Paid',    date:'Today, 09:14', color:'#4F8EF7', init:'AC' },
+  { name:'Nova Studio',   cat:'Agency',     amount:'$1,850', status:'pill-green', statusText:'Paid',    date:'Today, 08:30', color:'#34D399', init:'NS' },
+  { name:'Drift Labs',    cat:'Startup',    amount:'$920',   status:'pill-amber', statusText:'Pending', date:'Yesterday',    color:'#A78BFA', init:'DL' },
+  { name:'Mesh Retail',   cat:'E-commerce', amount:'$3,100', status:'pill-green', statusText:'Paid',    date:'Yesterday',    color:'#FBBF24', init:'MR' },
+  { name:'Forge Media',   cat:'Agency',     amount:'$670',   status:'pill-red',   statusText:'Failed',  date:'2 days ago',   color:'#F87171', init:'FM' },
+  { name:'Crest Finance', cat:'Finance',    amount:'$5,400', status:'pill-blue',  statusText:'Review',  date:'3 days ago',   color:'#4F8EF7', init:'CF' }
+];
+
+// ── ACTIVITY
+const allActivities = [
+  { dot:'#4F8EF7', text:'<strong>Acme Corp</strong> completed a $4,200 payment', time:'2 min ago' },
+  { dot:'#34D399', text:'New user <strong>@jamie.chen</strong> signed up via referral', time:'5 min ago' },
+  { dot:'#FBBF24', text:'<strong>Drift Labs</strong> invoice is pending review', time:'12 min ago' },
+  { dot:'#A78BFA', text:'Conversion rate dropped <strong>1.4%</strong> — check funnel', time:'18 min ago' },
+  { dot:'#34D399', text:'<strong>Nova Studio</strong> upgraded to Enterprise plan', time:'31 min ago' },
+  { dot:'#F87171', text:'Payment failed for <strong>Forge Media</strong> — retry needed', time:'45 min ago' },
+  { dot:'#4F8EF7', text:'Monthly report generated for <strong>Q1 2025</strong>', time:'1 hr ago' },
+  { dot:'#34D399', text:'<strong>Crest Finance</strong> submitted a new support ticket', time:'2 hr ago' }
+];
+let activityIdx = 0;
+
+// ── INIT
+window.addEventListener('DOMContentLoaded', () => {
+  animateKPIs('7D');
+  drawSparklines();
+  drawRevenueChart();
+  drawDonut();
+  buildTable();
+  buildActivity();
+});
+
+// ── NAV
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── DATE RANGE
+function setRange(range, btn) {
+  currentRange = range;
+  document.querySelectorAll('.date-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  animateKPIs(range);
+  drawRevenueChart();
+  document.getElementById('rev-subtitle').textContent =
+    `Last ${range} · Updated just now`;
+}
+
+// ── KPI ANIMATE
+function animateKPIs(range) {
+  const d = datasets[range].kpi;
+  countUp('kpi-rev', d.rev);
+  countUp('kpi-users', d.users);
+  countUp('kpi-conv', d.conv);
+  countUp('kpi-aov', d.aov);
+}
+function countUp(id, target) {
+  const el = document.getElementById(id);
+  const isNum = !isNaN(parseFloat(target.replace(/[$,%M]/g,'')));
+  if (!isNum) { el.textContent = target; return; }
+  el.textContent = target; // instant for complex strings like $2.83M
+}
+
+// ── SPARKLINES
+function drawSparklines() {
+  const colors = ['#4F8EF7','#34D399','#FBBF24','#A78BFA'];
+  sparkData.forEach((data, i) => {
+    const canvas = document.getElementById(`spark-${i}`);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const min = Math.min(...data), max = Math.max(...data);
+    const pts = data.map((v, j) => ({
+      x: (j / (data.length-1)) * W,
+      y: H - ((v - min) / (max - min + 1)) * (H - 4) - 2
+    }));
+    ctx.clearRect(0,0,W,H);
+    // fill
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0, colors[i] + '40');
+    grad.addColorStop(1, colors[i] + '00');
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, H);
+    pts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length-1].x, H);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+    // line
+    ctx.beginPath();
+    pts.forEach((p,j) => j===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+    ctx.strokeStyle = colors[i];
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+}
+
+// ── REVENUE CHART
+function drawRevenueChart() {
+  const canvas = document.getElementById('revenue-chart');
+  const ctx = canvas.getContext('2d');
+  const d = datasets[currentRange];
+  canvas.width = canvas.parentElement.offsetWidth - 48 || 500;
+  const W = canvas.width, H = 200;
+  canvas.height = H;
+  ctx.clearRect(0,0,W,H);
+
+  const allVals = [...d.revenue, ...d.target];
+  const maxV = Math.max(...allVals) * 1.12;
+  const minV = 0;
+  const padL = 52, padR = 16, padT = 12, padB = 32;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const n = d.labels.length;
+
+  // grid lines
+  const gridLines = 4;
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= gridLines; g++) {
+    const y = padT + (chartH / gridLines) * g;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    const val = maxV - (maxV / gridLines) * g;
+    ctx.fillStyle = '#4A5068';
+    ctx.font = '10px Syne';
+    ctx.textAlign = 'right';
+    ctx.fillText(val >= 1000 ? '$' + (val/1000).toFixed(0)+'k' : '$'+val.toFixed(0), padL - 6, y + 3);
+  }
+
+  const getX = i => padL + (i / (n-1 || 1)) * chartW;
+  const getY = v => padT + chartH - ((v - minV) / (maxV - minV)) * chartH;
+
+  function drawLine(data, color, dash=[]) {
+    ctx.beginPath();
+    ctx.setLineDash(dash);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    data.forEach((v,i) => i===0 ? ctx.moveTo(getX(i), getY(v)) : ctx.lineTo(getX(i), getY(v)));
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawArea(data, color) {
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
+    grad.addColorStop(0, color + '28');
+    grad.addColorStop(1, color + '00');
+    ctx.beginPath();
+    ctx.fillStyle = grad;
+    data.forEach((v,i) => i===0 ? ctx.moveTo(getX(i), getY(v)) : ctx.lineTo(getX(i), getY(v)));
+    ctx.lineTo(getX(n-1), padT + chartH);
+    ctx.lineTo(getX(0), padT + chartH);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawBars(data, color) {
+    const bw = (chartW / n) * 0.45;
+    data.forEach((v,i) => {
+      const x = getX(i) - bw/2;
+      const y = getY(v);
+      const h = padT + chartH - y;
+      const grad = ctx.createLinearGradient(0, y, 0, y + h);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + '60');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, bw, h, 3);
+      ctx.fill();
+    });
+  }
+
+  if (revenueChartType === 'bar') {
+    drawBars(d.target, '#A78BFA');
+    drawBars(d.revenue, '#4F8EF7');
+  } else {
+    drawArea(d.revenue, '#4F8EF7');
+    drawLine(d.target, '#A78BFA', [5,4]);
+    drawLine(d.revenue, '#4F8EF7');
+    // dots
+    d.revenue.forEach((v,i) => {
+      ctx.beginPath();
+      ctx.arc(getX(i), getY(v), 3.5, 0, Math.PI*2);
+      ctx.fillStyle = '#4F8EF7';
+      ctx.fill();
+      ctx.strokeStyle = '#0C0E12';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  }
+
+  // X labels
+  ctx.fillStyle = '#4A5068';
+  ctx.font = '10px Syne';
+  ctx.textAlign = 'center';
+  d.labels.forEach((l,i) => ctx.fillText(l, getX(i), H - 8));
+}
+
+function switchChartTab(chart, type, btn) {
+  btn.closest('.chart-tabs').querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (chart === 'revenue') { revenueChartType = type; drawRevenueChart(); }
+}
+
+// ── DONUT
+function drawDonut() {
+  const canvas = document.getElementById('donut-chart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = 60, inner = 38;
+  let angle = -Math.PI/2;
+  const total = channels.reduce((s,c) => s + c.value, 0);
+  ctx.clearRect(0,0,W,H);
+  channels.forEach(c => {
+    const sweep = (c.value / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + sweep);
+    ctx.closePath();
+    ctx.fillStyle = c.color;
+    ctx.fill();
+    angle += sweep;
+  });
+  // hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, inner, 0, Math.PI*2);
+  ctx.fillStyle = '#131720';
+  ctx.fill();
+  // center label
+  ctx.fillStyle = '#E8EAF0';
+  ctx.font = 'bold 18px Syne';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('100%', cx, cy - 5);
+  ctx.fillStyle = '#7A8299';
+  ctx.font = '9px Syne';
+  ctx.fillText('CHANNELS', cx, cy + 10);
+
+  // stat bars
+  const statsEl = document.getElementById('donut-stats');
+  statsEl.innerHTML = '';
+  channels.forEach(c => {
+    statsEl.innerHTML += `
+      <div class="donut-stat-row">
+        <div class="donut-stat-label">
+          <div style="width:8px;height:8px;border-radius:2px;background:${c.color};flex-shrink:0"></div>
+          ${c.label}
+        </div>
+        <div class="donut-stat-bar-wrap">
+          <div class="donut-stat-bar" style="width:${c.value}%;background:${c.color}"></div>
+        </div>
+        <div class="donut-stat-val" style="color:${c.color}">${c.value}%</div>
+      </div>`;
+  });
+}
+
+// ── TABLE
+function buildTable() {
+  const tbody = document.getElementById('tx-table');
+  tbody.innerHTML = transactions.map(t => `
+    <tr>
+      <td>
+        <div class="td-name">
+          <div class="td-avatar" style="background:${t.color}">${t.init}</div>
+          <div>
+            <div class="td-name-text">${t.name}</div>
+            <div class="td-sub">${t.cat}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="td-mono">${t.amount}</span></td>
+      <td><span class="status-pill ${t.status}">${t.statusText}</span></td>
+      <td style="color:var(--text3);font-size:0.72rem">${t.date}</td>
+    </tr>`).join('');
+}
+
+// ── ACTIVITY
+function buildActivity() {
+  const list = document.getElementById('activity-list');
+  list.innerHTML = allActivities.map((a,i) => `
+    <div class="activity-item" style="animation:cardIn 0.4s ${i*0.06}s both">
+      <div class="activity-dot-wrap">
+        <div class="activity-dot" style="background:${a.dot}"></div>
+        ${i < allActivities.length-1 ? '<div class="activity-line"></div>' : ''}
+      </div>
+      <div>
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function addActivity() {
+  const newEvents = [
+    { dot:'#34D399', text:'<strong>New signup</strong> from organic search channel', time:'just now' },
+    { dot:'#4F8EF7', text:'<strong>API quota</strong> at 82% — monitor usage', time:'just now' },
+    { dot:'#FBBF24', text:'<strong>Weekly report</strong> is ready to download', time:'just now' },
+  ];
+  const e = newEvents[activityIdx++ % newEvents.length];
+  allActivities.unshift(e);
+  allActivities.pop();
+  buildActivity();
+}
+
+// ── RESIZE
+window.addEventListener('resize', drawRevenueChart);
+</script>
+</body>
+</html>
