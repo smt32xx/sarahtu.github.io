@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ember & Oak — Restaurant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1510;
+    --ember: #C4622D;
+    --ember-light: #E8844F;
+    --gold: #B8924A;
+    --muted: #8A7E6F;
+    --border: rgba(184,146,74,0.25);
+    --section-bg: #F9F5EE;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 4rem;
+    transition: all 0.4s ease;
+  }
+  nav.scrolled {
+    background: rgba(26,21,16,0.96);
+    backdrop-filter: blur(12px);
+    padding: 1rem 4rem;
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+  }
+  .nav-logo span { color: var(--ember-light); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.8);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s;
+    border: none; background: none; padding: 0;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--ember-light); }
+  .nav-reserve-btn {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--ember-light);
+    border: none;
+    padding: 0.65rem 1.6rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .nav-reserve-btn:hover { background: var(--ember); transform: translateY(-1px); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HOME ── */
+  .hero {
+    height: 100vh;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #2C1F10 0%, #1A1510 40%, #0D0A07 100%);
+  }
+  .hero-texture {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(196,98,45,0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(184,146,74,0.1) 0%, transparent 40%);
+  }
+  .hero-line {
+    position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 1px; background: linear-gradient(to bottom, transparent, rgba(184,146,74,0.3), transparent);
+    transform: translateX(-50%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; text-align: center;
+    animation: heroFade 1.2s ease forwards;
+  }
+  @keyframes heroFade {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 0.9;
+    margin-bottom: 2rem;
+  }
+  .hero-title em { font-style: italic; color: var(--ember-light); }
+  .hero-subtitle {
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: rgba(245,240,232,0.6);
+    margin-bottom: 3.5rem;
+    max-width: 380px;
+    margin-left: auto; margin-right: auto;
+    line-height: 1.7;
+  }
+  .hero-cta-group { display: flex; gap: 1.5rem; justify-content: center; align-items: center; }
+  .btn-primary {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--ember-light);
+    border: none;
+    padding: 1rem 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-primary:hover { background: var(--ember); transform: translateY(-2px); }
+  .btn-ghost {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: transparent;
+    border: 1px solid rgba(245,240,232,0.3);
+    padding: 1rem 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-ghost:hover { border-color: var(--ember-light); color: var(--ember-light); }
+  .scroll-indicator {
+    position: absolute; bottom: 2.5rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, rgba(184,146,74,0.6), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; } 50% { opacity: 1; }
+  }
+
+  /* ── SECTION COMMONS ── */
+  section { padding: 8rem 4rem; }
+  .section-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .section-divider {
+    width: 60px; height: 1px;
+    background: var(--ember);
+    margin: 1.5rem 0;
+  }
+
+  /* ── FEATURES (Home) ── */
+  .features {
+    background: var(--dark);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .feature-item {
+    padding: 5rem 3rem;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.4s;
+  }
+  .feature-item:last-child { border-right: none; }
+  .feature-item:hover { background: rgba(196,98,45,0.08); }
+  .feature-icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: var(--ember);
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+  .feature-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: var(--cream);
+    margin-bottom: 1rem;
+  }
+  .feature-text {
+    font-size: 0.87rem;
+    color: rgba(245,240,232,0.5);
+    line-height: 1.8;
+  }
+
+  /* ── ABOUT STRIP ── */
+  .about-strip {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0; background: var(--section-bg);
+  }
+  .about-image-panel {
+    background: var(--dark);
+    min-height: 550px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .about-image-placeholder {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #2C1F10 0%, #1A1510 60%, #2a1a0e 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .about-image-art {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10rem;
+    color: rgba(196,98,45,0.15);
+    user-select: none;
+  }
+  .about-content-panel {
+    padding: 6rem 5rem;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .about-content-panel p {
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex; gap: 3rem; margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--ember);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── MENU PAGE ── */
+  .menu-hero {
+    height: 40vh; min-height: 320px;
+    background: var(--dark);
+    display: flex; align-items: flex-end; justify-content: flex-start;
+    padding: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .menu-hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #1A1510 0%, #2C1F10 100%);
+  }
+  .menu-hero-accent {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 40%;
+    background: radial-gradient(circle at 80% 50%, rgba(196,98,45,0.2), transparent 60%);
+  }
+  .menu-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 300;
+    color: var(--cream);
+    position: relative; z-index: 2;
+    line-height: 1;
+  }
+  .menu-hero h1 em { font-style: italic; color: var(--ember-light); }
+
+  .menu-nav-bar {
+    background: var(--dark);
+    padding: 0 4rem;
+    display: flex; gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky; top: 72px; z-index: 50;
+  }
+  .menu-tab {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+    background: none; border: none;
+    padding: 1.25rem 2rem;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+  }
+  .menu-tab::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--ember-light);
+    transform: scaleX(0); transition: transform 0.3s;
+  }
+  .menu-tab.active { color: var(--cream); }
+  .menu-tab.active::after { transform: scaleX(1); }
+  .menu-tab:hover { color: rgba(245,240,232,0.8); }
+
+  .menu-section { display: none; }
+  .menu-section.active { display: block; }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2px; background: var(--border);
+  }
+  .menu-card {
+    background: var(--cream);
+    padding: 2.5rem;
+    transition: background 0.3s;
+  }
+  .menu-card:hover { background: #FBF7F0; }
+  .menu-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+  .menu-item-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--dark);
+    line-height: 1.2;
+    flex: 1;
+  }
+  .menu-item-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--ember);
+    font-weight: 600;
+    margin-left: 1rem;
+  }
+  .menu-item-desc {
+    font-size: 0.83rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .menu-item-tags { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .tag.chef { border-color: var(--ember); color: var(--ember); }
+
+  /* ── ABOUT PAGE ── */
+  .about-hero {
+    height: 40vh; min-height: 320px;
+    background: var(--dark);
+    display: flex; align-items: flex-end; padding: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .about-hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #0D0A07 0%, #2C1F10 100%);
+  }
+  .about-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 300;
+    color: var(--cream);
+    position: relative; z-index: 2;
+    line-height: 1;
+  }
+
+  .team-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2px; background: var(--border);
+  }
+  .team-card {
+    background: var(--cream);
+    padding: 3rem 2.5rem;
+    text-align: center;
+  }
+  .team-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--dark);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: var(--ember-light);
+  }
+  .team-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: var(--dark);
+    margin-bottom: 0.35rem;
+  }
+  .team-role {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 1rem;
+  }
+  .team-bio { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+  .values-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 3rem; max-width: 900px; margin: 0 auto;
+  }
+  .value-item { display: flex; gap: 1.5rem; }
+  .value-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: rgba(196,98,45,0.2);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 3rem;
+  }
+  .value-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+  .value-text { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+  /* ── CONTACT PAGE ── */
+  .contact-hero {
+    height: 40vh; min-height: 320px;
+    background: var(--dark);
+    display: flex; align-items: flex-end; padding: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .contact-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 300;
+    color: var(--cream);
+    position: relative; z-index: 2;
+    line-height: 1;
+  }
+
+  .contact-layout {
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    gap: 0;
+  }
+  .contact-info {
+    background: var(--dark);
+    padding: 5rem 4rem;
+    color: var(--cream);
+  }
+  .contact-info .section-title { color: var(--cream); }
+  .info-block { margin-top: 3rem; }
+  .info-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .info-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: rgba(245,240,232,0.85);
+    line-height: 1.6;
+  }
+  .info-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 2rem 0; }
+
+  .contact-form-panel {
+    background: var(--section-bg);
+    padding: 5rem 4rem;
+  }
+  .form-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .form-group { margin-bottom: 1.5rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.93rem;
+    font-weight: 300;
+    color: var(--dark);
+    outline: none;
+    transition: border-color 0.3s;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus { border-color: var(--ember); }
+  .form-group textarea { resize: none; min-height: 120px; }
+  .form-submit {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: var(--dark);
+    border: none;
+    padding: 1.1rem 3rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+  }
+  .form-submit:hover { background: var(--ember); }
+  .form-success {
+    display: none;
+    background: rgba(196,98,45,0.08);
+    border-left: 3px solid var(--ember);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--dark);
+  }
+
+  /* ── RESERVATION MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,8,5,0.85);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--cream);
+    width: 90%; max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.4s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    background: var(--dark);
+    padding: 3rem 3rem 2.5rem;
+    position: relative;
+  }
+  .modal-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--cream);
+  }
+  .modal-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: rgba(255,255,255,0.1);
+    border: none; color: var(--cream);
+    width: 36px; height: 36px;
+    cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+  }
+  .modal-close:hover { background: var(--ember); }
+  .modal-body { padding: 2.5rem 3rem 3rem; }
+
+  .res-steps { display: flex; gap: 0; margin-bottom: 2.5rem; }
+  .res-step {
+    flex: 1; text-align: center;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+    transition: all 0.3s;
+  }
+  .res-step.active {
+    color: var(--ember);
+    border-bottom-color: var(--ember);
+  }
+  .res-step.done {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  .res-panel { display: none; }
+  .res-panel.active { display: block; }
+
+  .date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 1.5rem 0; }
+  .date-cell {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.2s;
+    border-radius: 0;
+  }
+  .date-cell:hover:not(.disabled):not(.empty) { border-color: var(--ember); color: var(--ember); }
+  .date-cell.selected { background: var(--ember); color: #fff; border-color: var(--ember); }
+  .date-cell.disabled { color: var(--muted); opacity: 0.4; cursor: not-allowed; }
+  .date-cell.empty { cursor: default; }
+  .date-header { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: center; padding: 0.5rem 0; }
+
+  .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1rem 0; }
+  .time-btn {
+    padding: 0.75rem; text-align: center;
+    font-family: 'Jost', sans-serif; font-size: 0.85rem;
+    border: 1px solid var(--border); background: transparent;
+    cursor: pointer; transition: all 0.2s; color: var(--dark);
+  }
+  .time-btn:hover { border-color: var(--ember); color: var(--ember); }
+  .time-btn.selected { background: var(--dark); color: var(--cream); border-color: var(--dark); }
+  .time-btn.unavailable { opacity: 0.3; cursor: not-allowed; }
+
+  .guest-selector {
+    display: flex; align-items: center; gap: 1.5rem; margin: 1.5rem 0;
+  }
+  .guest-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border); background: transparent;
+    font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; color: var(--dark);
+  }
+  .guest-btn:hover { border-color: var(--ember); color: var(--ember); }
+  .guest-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem; font-weight: 300;
+    min-width: 3rem; text-align: center;
+  }
+  .guest-label { font-size: 0.8rem; color: var(--muted); }
+
+  .month-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .month-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem; font-weight: 400;
+  }
+  .month-btn {
+    background: none; border: none;
+    font-size: 1.2rem; cursor: pointer; color: var(--dark);
+    padding: 0.25rem 0.5rem; transition: color 0.2s;
+  }
+  .month-btn:hover { color: var(--ember); }
+
+  .res-summary {
+    background: var(--dark);
+    padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+  .res-summary-row {
+    display: flex; justify-content: space-between;
+    padding: 0.5rem 0; font-size: 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .res-summary-row:last-child { border-bottom: none; }
+  .res-summary-row span:first-child { color: rgba(245,240,232,0.5); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .res-summary-row span:last-child { color: var(--cream); }
+
+  .res-nav { display: flex; gap: 1rem; margin-top: 2rem; }
+  .res-next {
+    flex: 1; background: var(--ember);
+    font-family: 'Jost', sans-serif; font-size: 0.75rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--dark); border: none; padding: 1rem;
+    cursor: pointer; font-weight: 500;
+    transition: background 0.3s;
+  }
+  .res-next:hover { background: var(--ember-light); }
+  .res-next:disabled { opacity: 0.4; cursor: not-allowed; }
+  .res-back {
+    background: transparent; border: 1px solid var(--border);
+    font-family: 'Jost', sans-serif; font-size: 0.75rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); padding: 1rem 1.5rem;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .res-back:hover { border-color: var(--dark); color: var(--dark); }
+
+  .res-confirm-art {
+    text-align: center; padding: 2rem 0;
+  }
+  .res-confirm-art .check-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(196,98,45,0.1);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem; color: var(--ember);
+  }
+  .res-confirm-art h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem; font-weight: 300; margin-bottom: 0.75rem;
+  }
+  .res-confirm-art p { font-size: 0.87rem; color: var(--muted); line-height: 1.7; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark);
+    padding: 4rem;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .footer-brand .nav-logo { display: block; margin-bottom: 1rem; }
+  .footer-tagline { font-size: 0.83rem; color: rgba(245,240,232,0.4); line-height: 1.7; max-width: 240px; }
+  .footer-col h4 {
+    font-size: 0.68rem; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 1.25rem;
+  }
+  .footer-col a, .footer-col p {
+    display: block; font-size: 0.83rem;
+    color: rgba(245,240,232,0.45); margin-bottom: 0.6rem;
+    text-decoration: none; cursor: pointer;
+    transition: color 0.3s;
+  }
+  .footer-col a:hover { color: rgba(245,240,232,0.8); }
+  .footer-bottom {
+    background: var(--dark);
+    padding: 1.5rem 4rem;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; color: rgba(245,240,232,0.25);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1.25rem 2rem; }
+    nav.scrolled { padding: 0.8rem 2rem; }
+    .nav-links { display: none; }
+    section { padding: 5rem 2rem; }
+    .features { grid-template-columns: 1fr; }
+    .feature-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .about-strip { grid-template-columns: 1fr; }
+    .about-image-panel { min-height: 250px; }
+    .about-content-panel { padding: 3rem 2rem; }
+    .team-grid { grid-template-columns: 1fr; }
+    .values-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .contact-layout { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr 1fr; }
+    .menu-hero, .about-hero, .contact-hero { padding: 2.5rem 2rem; }
+    .menu-nav-bar { padding: 0 2rem; overflow-x: auto; }
+    .modal-header, .modal-body { padding: 2rem; }
+    .hero-cta-group { flex-direction: column; gap: 1rem; }
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-in {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo" onclick="goTo('home')">Ember <span>&</span> Oak</div>
+  <ul class="nav-links">
+    <li><a onclick="goTo('home')" id="nav-home" class="active">Home</a></li>
+    <li><a onclick="goTo('menu')" id="nav-menu">Menu</a></li>
+    <li><a onclick="goTo('about')" id="nav-about">About</a></li>
+    <li><a onclick="goTo('contact')" id="nav-contact">Contact</a></li>
+  </ul>
+  <button class="nav-reserve-btn" onclick="openReservation()">Reserve a Table</button>
+</nav>
+
+<!-- ════════════════ HOME PAGE ════════════════ -->
+<div class="page active" id="page-home">
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-texture"></div>
+    <div class="hero-line"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Est. 2019 · Downtown</p>
+      <h1 class="hero-title">Ember<br><em>&amp; Oak</em></h1>
+      <p class="hero-subtitle">Where fire meets flavour. A celebration of wood-fired craft, seasonal ingredients, and timeless hospitality.</p>
+      <div class="hero-cta-group">
+        <button class="btn-primary" onclick="openReservation()">Reserve a Table</button>
+        <button class="btn-ghost" onclick="goTo('menu')">Explore Menu</button>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <div class="features">
+    <div class="feature-item fade-in">
+      <span class="feature-icon">𝌅</span>
+      <div class="feature-title">Wood-Fired Mastery</div>
+      <p class="feature-text">Every dish passes through our 800°C oak-fired hearth. The smoke, the char, the crust — it's in our DNA.</p>
+    </div>
+    <div class="feature-item fade-in" style="transition-delay:0.15s">
+      <span class="feature-icon">⌘</span>
+      <div class="feature-title">Seasonal & Local</div>
+      <p class="feature-text">Our menu changes with the seasons, sourced from farms within 100 miles. Freshness is non-negotiable.</p>
+    </div>
+    <div class="feature-item fade-in" style="transition-delay:0.3s">
+      <span class="feature-icon">◈</span>
+      <div class="feature-title">Curated Wine List</div>
+      <p class="feature-text">Over 200 natural and biodynamic labels, chosen by our sommelier to pair perfectly with live-fire cuisine.</p>
+    </div>
+  </div>
+
+  <div class="about-strip">
+    <div class="about-image-panel">
+      <div class="about-image-placeholder">
+        <div class="about-image-art">🔥</div>
+      </div>
+    </div>
+    <div class="about-content-panel">
+      <p class="section-eyebrow">Our Story</p>
+      <h2 class="section-title">Cooking with<br>fire &amp; intention</h2>
+      <div class="section-divider"></div>
+      <p>Ember &amp; Oak began as a single wood-burning oven in a converted warehouse. Today it's a philosophy — that the best meals come from honest ingredients and honest fire.</p>
+      <p>Head Chef Nadia Ferrara trained in the Basque Country before returning home to build something rooted in this soil, this season, this moment.</p>
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-num">12+</span>
+          <span class="stat-label">Years Together</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">48</span>
+          <span class="stat-label">Seats Only</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">4</span>
+          <span class="stat-label">Awards Won</span>
+        </div>
+      </div>
+      <button class="btn-ghost" style="margin-top:2.5rem;border-color:var(--border);color:var(--dark);" onclick="goTo('about')">Our Full Story</button>
+    </div>
+  </div>
+
+  <section style="background:var(--dark);text-align:center;padding:6rem 4rem;">
+    <p class="section-eyebrow">A Table Awaits</p>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:300;color:var(--cream);margin-bottom:1rem;">
+      Make tonight<br><em style="color:var(--ember-light);">unforgettable</em>
+    </h2>
+    <p style="font-size:0.9rem;color:rgba(245,240,232,0.5);margin:1.5rem auto 3rem;max-width:420px;line-height:1.8;">
+      We seat just 48 guests each evening. Reserve your place at the fire.
+    </p>
+    <button class="btn-primary" onclick="openReservation()" style="font-size:0.8rem;padding:1.2rem 3rem;">Book Your Table</button>
+  </section>
+
+</div>
+
+<!-- ════════════════ MENU PAGE ════════════════ -->
+<div class="page" id="page-menu">
+
+  <div class="menu-hero">
+    <div class="menu-hero-bg"></div>
+    <div class="menu-hero-accent"></div>
+    <h1><em>The</em><br>Menu</h1>
+  </div>
+
+  <div class="menu-nav-bar">
+    <button class="menu-tab active" onclick="switchMenuTab('starters',this)">Starters</button>
+    <button class="menu-tab" onclick="switchMenuTab('mains',this)">Mains</button>
+    <button class="menu-tab" onclick="switchMenuTab('desserts',this)">Desserts</button>
+    <button class="menu-tab" onclick="switchMenuTab('drinks',this)">Drinks</button>
+  </div>
+
+  <div style="background:var(--cream)">
+
+    <!-- STARTERS -->
+    <div class="menu-section active" id="menu-starters">
+      <div class="menu-grid">
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Ember-Blistered Flatbread</div>
+            <div class="menu-item-price">$12</div>
+          </div>
+          <p class="menu-item-desc">Wood-fired sourdough, whipped ricotta, fig jam, toasted hazelnuts, rosemary oil</p>
+          <div class="menu-item-tags"><span class="tag">Vegetarian</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Charred Octopus</div>
+            <div class="menu-item-price">$22</div>
+          </div>
+          <p class="menu-item-desc">Slow-braised then grilled, smoked paprika aioli, crispy capers, lemon zest</p>
+          <div class="menu-item-tags"><span class="tag chef">Chef's Pick</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Heritage Tomato Salad</div>
+            <div class="menu-item-price">$16</div>
+          </div>
+          <p class="menu-item-desc">Seven varieties, buffalo mozzarella, aged balsamic, basil oil, flaked sea salt</p>
+          <div class="menu-item-tags"><span class="tag">Vegetarian</span><span class="tag">Seasonal</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Oak-Smoked Duck Rillettes</div>
+            <div class="menu-item-price">$19</div>
+          </div>
+          <p class="menu-item-desc">12-hour smoked confit, pickled shallots, cornichons, toasted sourdough soldiers</p>
+          <div class="menu-item-tags"><span class="tag">House Specialty</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Bone Marrow & Herb Crust</div>
+            <div class="menu-item-price">$18</div>
+          </div>
+          <p class="menu-item-desc">Roasted marrow bones, chimichurri, caramelised onion jam, warm toast</p>
+          <div class="menu-item-tags"><span class="tag chef">Chef's Pick</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Chilled Corn Velouté</div>
+            <div class="menu-item-price">$14</div>
+          </div>
+          <p class="menu-item-desc">Sweet corn bisque, truffle oil, chive cream, popped corn, summer herbs</p>
+          <div class="menu-item-tags"><span class="tag">Vegetarian</span><span class="tag">Seasonal</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAINS -->
+    <div class="menu-section" id="menu-mains">
+      <div class="menu-grid">
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Dry-Aged Côte de Boeuf</div>
+            <div class="menu-item-price">$68</div>
+          </div>
+          <p class="menu-item-desc">42-day dry-aged, fire-roasted whole, béarnaise, ember-roasted marrow bone, watercress. For two.</p>
+          <div class="menu-item-tags"><span class="tag chef">Chef's Pick</span><span class="tag">For Two</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Wild Sea Bass</div>
+            <div class="menu-item-price">$38</div>
+          </div>
+          <p class="menu-item-desc">Whole roasted over oak, fennel &amp; citrus beurre blanc, pickled cucumber, dill oil</p>
+          <div class="menu-item-tags"><span class="tag">Seasonal</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Heritage Pork Collar</div>
+            <div class="menu-item-price">$36</div>
+          </div>
+          <p class="menu-item-desc">8-hour smoked, charred stone-fruit jus, pickled cabbage, potato rösti</p>
+          <div class="menu-item-tags"><span class="tag">House Specialty</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Ember-Roasted Cauliflower</div>
+            <div class="menu-item-price">$28</div>
+          </div>
+          <p class="menu-item-desc">Whole head, harissa butter glaze, toasted pine nuts, pomegranate, tahini</p>
+          <div class="menu-item-tags"><span class="tag">Vegan</span><span class="tag chef">Chef's Pick</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Duck Breast with Cherries</div>
+            <div class="menu-item-price">$42</div>
+          </div>
+          <p class="menu-item-desc">Fire-roasted, sour cherry reduction, turnip gratin, crispy duck fat potatoes</p>
+          <div class="menu-item-tags"><span class="tag">Seasonal</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Lamb Saddle Chop</div>
+            <div class="menu-item-price">$44</div>
+          </div>
+          <p class="menu-item-desc">Salt-crust baked, salsa verde, smoked aubergine purée, crispy chickpeas</p>
+          <div class="menu-item-tags"><span class="tag">House Specialty</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESSERTS -->
+    <div class="menu-section" id="menu-desserts">
+      <div class="menu-grid">
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Burnt Basque Cheesecake</div>
+            <div class="menu-item-price">$14</div>
+          </div>
+          <p class="menu-item-desc">Fire-blackened cream cheese, Biscoff crumble, vanilla bean ice cream</p>
+          <div class="menu-item-tags"><span class="tag chef">Chef's Pick</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Dark Chocolate Fondant</div>
+            <div class="menu-item-price">$15</div>
+          </div>
+          <p class="menu-item-desc">Valrhona 70%, salted caramel core, smoked almond ice cream</p>
+          <div class="menu-item-tags"><span class="tag">Vegetarian</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Stone Fruit Tarte Tatin</div>
+            <div class="menu-item-price">$13</div>
+          </div>
+          <p class="menu-item-desc">Seasonal stone fruit, brown butter caramel, flaky pastry, crème fraîche</p>
+          <div class="menu-item-tags"><span class="tag">Seasonal</span></div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-card-header">
+            <div class="menu-item-name">Artisan Cheese Board</div>
+            <div class="menu-item-price">$24</div>
+          </div>
+          <p class="menu-item-desc">Selection of four cheeses, honeycomb, fig compote, house crackers, fresh grapes</p>
+          <div class="menu-item-tags"><span class="tag">Vegetarian</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRINKS -->
+    <div class="menu-section" id="menu-drinks">
+      <div style="padding:3rem 4rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;">
+          <div>
+            <p class="section-eyebrow" style="margin-bottom:2rem">Cocktails</p>
+            <div style="border-top:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Smoked Old Fashioned</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Bourbon, hickory smoke, orange bitters, maple</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$16</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Ember Negroni</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Campari, fire-infused gin, charred orange peel</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$15</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Garden Spritz</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Elderflower, cucumber, prosecco, fresh herbs</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$14</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Midnight Sour</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Mezcal, activated charcoal, citrus, egg white</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$17</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="section-eyebrow" style="margin-bottom:2rem">Wine By Glass</p>
+            <div style="border-top:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Albariño, Rias Baixas</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Crisp, mineral, citrus blossom — 2022</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$14</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Barolo, Piedmont</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Full-bodied, tar, roses, wild cherry — 2019</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$22</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Grüner Veltliner</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">White pepper, lemon, green herbs — 2021</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$13</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:1.25rem 0">
+                <div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem">Pinot Noir, Willamette</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Silky, forest floor, red fruit — 2020</div>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;color:var(--ember);font-size:1.1rem;font-weight:600">$18</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end menu bg -->
+
+  <section style="background:var(--dark);text-align:center;padding:5rem 4rem">
+    <p style="font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Dietary Requirements</p>
+    <p style="font-size:0.9rem;color:rgba(245,240,232,0.5);max-width:500px;margin:0 auto 2.5rem;line-height:1.8">
+      We accommodate all dietary needs with pleasure. Please inform us when booking or speak to your server.
+    </p>
+    <button class="btn-primary" onclick="openReservation()">Reserve a Table</button>
+  </section>
+
+</div>
+
+<!-- ════════════════ ABOUT PAGE ════════════════ -->
+<div class="page" id="page-about">
+
+  <div class="about-hero">
+    <div class="about-hero-bg"></div>
+    <h1>Our<br><em style="font-style:italic;color:var(--ember-light)">Story</em></h1>
+  </div>
+
+  <section style="background:var(--section-bg)">
+    <div style="max-width:750px">
+      <p class="section-eyebrow">The Beginning</p>
+      <h2 class="section-title">Born from fire,<br>built on trust</h2>
+      <div class="section-divider"></div>
+      <p style="font-size:1rem;line-height:1.9;color:var(--muted);margin-bottom:1.5rem">
+        Ember &amp; Oak opened in 2019 in a converted Victorian warehouse in the heart of the city. What began as a stubborn belief that wood fire could unlock flavours no gas stove ever would quickly became something more — a gathering place, a ritual, a second home for those who love eating well.
+      </p>
+      <p style="font-size:1rem;line-height:1.9;color:var(--muted);margin-bottom:1.5rem">
+        Our dining room seats just 48. That's intentional. We believe great hospitality requires attention — to the plate, to the guest, to the moment. We'll never grow faster than our ability to care.
+      </p>
+      <p style="font-size:1rem;line-height:1.9;color:var(--muted)">
+        We buy from seven family farms within 100 miles of this kitchen. We don't print menus until the morning of service, because the farm decides what we cook — not the other way around.
+      </p>
+    </div>
+  </section>
+
+  <section style="background:var(--dark);padding:6rem 4rem">
+    <p class="section-eyebrow">The Team</p>
+    <h2 class="section-title" style="color:var(--cream);margin-bottom:3rem">Meet the people<br><em style="font-style:italic;color:var(--ember-light)">behind the fire</em></h2>
+    <div class="team-grid">
+      <div class="team-card" style="background:#222018">
+        <div class="team-avatar">NF</div>
+        <div class="team-name" style="color:var(--cream)">Nadia Ferrara</div>
+        <div class="team-role">Head Chef & Co-Founder</div>
+        <p class="team-bio" style="color:rgba(245,240,232,0.45)">Trained under Bittor Arginzoniz in the Basque Country, Nadia returned home to pioneer live-fire cooking in this city. Three-time award winner, fearless technician, and tireless advocate for local farmers.</p>
+      </div>
+      <div class="team-card" style="background:#222018">
+        <div class="team-avatar">MS</div>
+        <div class="team-name" style="color:var(--cream)">Marco Sela</div>
+        <div class="team-role">Sommelier & Co-Founder</div>
+        <p class="team-bio" style="color:rgba(245,240,232,0.45)">Marco spent a decade working in Burgundy, Andalusia, and the Douro Valley before co-founding Ember &amp; Oak. His 200-label list champions natural producers who share our respect for the land.</p>
+      </div>
+      <div class="team-card" style="background:#222018">
+        <div class="team-avatar">AL</div>
+        <div class="team-name" style="color:var(--cream)">Ada Liu</div>
+        <div class="team-role">Pastry Chef</div>
+        <p class="team-bio" style="color:rgba(245,240,232,0.45)">Ada brings precision and whimsy to the dessert menu in equal measure. She believes a perfect meal deserves an equally perfect ending — and she's usually right.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:var(--section-bg)">
+    <p class="section-eyebrow" style="text-align:center;margin-bottom:1rem">What We Believe</p>
+    <h2 class="section-title" style="text-align:center;margin-bottom:4rem">Our values</h2>
+    <div class="values-grid">
+      <div class="value-item">
+        <div class="value-num">01</div>
+        <div>
+          <div class="value-title">Fire is a craft</div>
+          <p class="value-text">Every cook at Ember &amp; Oak spends their first month learning the hearth — how it breathes, how it varies hour to hour, how to read its heat. Fire is not a shortcut. It's an instrument.</p>
+        </div>
+      </div>
+      <div class="value-item">
+        <div class="value-num">02</div>
+        <div>
+          <div class="value-title">The farm comes first</div>
+          <p class="value-text">We build relationships with producers before we build menus. If a farm is having a bad season, we feature it, support it, buy more of it. Their success is our story.</p>
+        </div>
+      </div>
+      <div class="value-item">
+        <div class="value-num">03</div>
+        <div>
+          <div class="value-title">Hospitality is human</div>
+          <p class="value-text">No scripts, no upselling, no formula. We train our team to read a table — when to be present, when to disappear, when a joke is right.</p>
+        </div>
+      </div>
+      <div class="value-item">
+        <div class="value-num">04</div>
+        <div>
+          <div class="value-title">Small is intentional</div>
+          <p class="value-text">48 seats is our ceiling and our pride. We will never compromise the experience for the sake of scale. Quality is geometry here: the smaller the space, the closer the attention.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ════════════════ CONTACT PAGE ════════════════ -->
+<div class="page" id="page-contact">
+
+  <div class="contact-hero" style="background:var(--dark);position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1A1510 0%,#2C1F10 100%)"></div>
+    <h1 class="contact-hero-heading" style="position:relative;z-index:2">Get in<br><em style="font-style:italic;color:var(--ember-light)">Touch</em></h1>
+  </div>
+
+  <div class="contact-layout">
+    <div class="contact-info">
+      <p class="section-eyebrow">Find Us</p>
+      <h2 class="section-title" style="font-size:2rem">We'd love<br>to hear from you</h2>
+
+      <div class="info-block">
+        <p class="info-label">Address</p>
+        <p class="info-value">14 Coalyard Lane<br>The Industrial Quarter<br>London, EC2A 4PH</p>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-block">
+        <p class="info-label">Hours</p>
+        <p class="info-value">
+          Tuesday – Friday: 6:00pm – 10:30pm<br>
+          Saturday: 12:00pm – 2:30pm &amp; 6:00pm – 11:00pm<br>
+          Sunday: 12:00pm – 4:00pm<br>
+          <span style="color:rgba(245,240,232,0.4);font-size:0.85rem">Closed Monday</span>
+        </p>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-block">
+        <p class="info-label">Reservations</p>
+        <p class="info-value">+44 (0)20 7123 4567</p>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-block">
+        <p class="info-label">Email</p>
+        <p class="info-value">hello@emberandoak.co.uk</p>
+      </div>
+      <div style="margin-top:3rem">
+        <button class="btn-primary" onclick="openReservation()">Reserve Online</button>
+      </div>
+    </div>
+
+    <div class="contact-form-panel">
+      <div class="form-title">Send us a message</div>
+      <div id="contact-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="cf-first" placeholder="Jane">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="cf-last" placeholder="Smith">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="cf-email" placeholder="jane@example.com">
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <select id="cf-subject">
+            <option value="">Select a topic…</option>
+            <option>General Enquiry</option>
+            <option>Private Dining & Events</option>
+            <option>Press & Media</option>
+            <option>Supplier / Partnership</option>
+            <option>Feedback</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="cf-message" placeholder="Tell us how we can help…"></textarea>
+        </div>
+        <button class="form-submit" onclick="submitContact()">Send Message</button>
+        <div class="form-success" id="contact-success">
+          ✓ Thank you! We'll be in touch within 24 hours.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer>
+  <div class="footer-brand">
+    <div class="nav-logo">Ember <span>&</span> Oak</div>
+    <p class="footer-tagline">Where fire meets flavour. 48 seats. One hearth. Nightly.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Navigate</h4>
+    <a onclick="goTo('home')">Home</a>
+    <a onclick="goTo('menu')">Menu</a>
+    <a onclick="goTo('about')">About</a>
+    <a onclick="goTo('contact')">Contact</a>
+  </div>
+  <div class="footer-col">
+    <h4>Visit</h4>
+    <p>14 Coalyard Lane</p>
+    <p>London, EC2A 4PH</p>
+    <p>+44 (0)20 7123 4567</p>
+  </div>
+  <div class="footer-col">
+    <h4>Hours</h4>
+    <p>Tue–Fri: 6pm–10:30pm</p>
+    <p>Sat: Lunch & Dinner</p>
+    <p>Sun: 12pm–4pm</p>
+    <p>Mon: Closed</p>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span>© 2025 Ember & Oak. All rights reserved.</span>
+  <span>Crafted with intention</span>
+</div>
+
+<!-- ════════════════ RESERVATION MODAL ════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <p class="modal-eyebrow">Reserve Your Table</p>
+      <h2 class="modal-title">Book a Table</h2>
+      <button class="modal-close" onclick="closeReservation()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="res-steps">
+        <div class="res-step active" id="step-1">1 · Date &amp; Time</div>
+        <div class="res-step" id="step-2">2 · Guests</div>
+        <div class="res-step" id="step-3">3 · Details</div>
+        <div class="res-step" id="step-4">4 · Confirm</div>
+      </div>
+
+      <!-- STEP 1: Date & Time -->
+      <div class="res-panel active" id="panel-1">
+        <div class="month-nav">
+          <button class="month-btn" onclick="prevMonth()">‹</button>
+          <span class="month-label" id="month-label"></span>
+          <button class="month-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div class="date-grid" id="date-grid">
+          <div class="date-header">Su</div>
+          <div class="date-header">Mo</div>
+          <div class="date-header">Tu</div>
+          <div class="date-header">We</div>
+          <div class="date-header">Th</div>
+          <div class="date-header">Fr</div>
+          <div class="date-header">Sa</div>
+        </div>
+        <p style="font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 0.75rem">Select Time</p>
+        <div class="time-grid" id="time-grid"></div>
+        <div class="res-nav">
+          <button class="res-next" id="btn-next-1" onclick="goStep(2)" disabled>Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Guests -->
+      <div class="res-panel" id="panel-2">
+        <p style="font-size:0.87rem;color:var(--muted);margin-bottom:2rem;line-height:1.7">How many guests will be joining you? We can accommodate up to 8 guests per booking.</p>
+        <div class="guest-selector">
+          <button class="guest-btn" onclick="changeGuests(-1)">−</button>
+          <span class="guest-count" id="guest-count">2</span>
+          <button class="guest-btn" onclick="changeGuests(1)">+</button>
+          <span class="guest-label">guests</span>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:1rem">For larger parties of 9+, please call us directly.</p>
+        <div class="res-nav">
+          <button class="res-back" onclick="goStep(1)">← Back</button>
+          <button class="res-next" onclick="goStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Details -->
+      <div class="res-panel" id="panel-3">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="res-name" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="res-email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="res-phone" placeholder="+44 (0)20 ...">
+        </div>
+        <div class="form-group">
+          <label>Special Requests (optional)</label>
+          <textarea id="res-notes" style="min-height:80px" placeholder="Dietary requirements, allergies, occasion…"></textarea>
+        </div>
+        <div class="res-nav">
+          <button class="res-back" onclick="goStep(2)">← Back</button>
+          <button class="res-next" onclick="goStep(4)">Review Booking →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Confirm -->
+      <div class="res-panel" id="panel-4">
+        <div class="res-summary" id="res-summary"></div>
+        <p style="font-size:0.78rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem">
+          A confirmation email will be sent to you. We hold tables for 15 minutes. For cancellations, please contact us at least 24 hours in advance.
+        </p>
+        <div class="res-nav">
+          <button class="res-back" onclick="goStep(3)">← Back</button>
+          <button class="res-next" onclick="confirmReservation()">Confirm Booking</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Success -->
+      <div class="res-panel" id="panel-5">
+        <div class="res-confirm-art">
+          <div class="check-circle">✓</div>
+          <h3>You're confirmed!</h3>
+          <p id="confirm-msg">Your table has been reserved. We look forward to welcoming you.</p>
+          <button class="btn-primary" style="margin-top:2rem;font-size:0.75rem;padding:0.9rem 2rem" onclick="closeReservation()">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE
+let currentPage = 'home';
+let resDate = null, resTime = null, resGuests = 2, resStep = 1;
+let calYear, calMonth;
+const today = new Date();
+calYear = today.getFullYear();
+calMonth = today.getMonth();
+
+// ── NAVIGATION
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  currentPage = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── NAV SCROLL
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 60) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+});
+
+// ── MENU TABS
+function switchMenuTab(section, btn) {
+  document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('menu-' + section).classList.add('active');
+}
+
+// ── CONTACT FORM
+function submitContact() {
+  const name = document.getElementById('cf-first').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const msg = document.getElementById('cf-message').value.trim();
+  if (!name || !email || !msg) {
+    alert('Please fill in your name, email, and message.');
+    return;
+  }
+  document.getElementById('contact-success').style.display = 'block';
+  document.getElementById('cf-first').value = '';
+  document.getElementById('cf-last').value = '';
+  document.getElementById('cf-email').value = '';
+  document.getElementById('cf-subject').value = '';
+  document.getElementById('cf-message').value = '';
+  setTimeout(() => { document.getElementById('contact-success').style.display = 'none'; }, 5000);
+}
+
+// ── RESERVATION MODAL
+function openReservation() {
+  resDate = null; resTime = null; resGuests = 2; resStep = 1;
+  document.getElementById('guest-count').textContent = '2';
+  renderCalendar();
+  renderTimes();
+  goStepUI(1);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeReservation() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeReservation();
+}
+
+// ── CALENDAR
+const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function renderCalendar() {
+  document.getElementById('month-label').textContent = months[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('date-grid');
+  // Remove old day cells (keep headers = first 7 children)
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'date-cell empty';
+    grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div');
+    el.className = 'date-cell';
+    el.textContent = d;
+    const cellDate = new Date(calYear, calMonth, d);
+    const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isMonday = cellDate.getDay() === 1; // closed Monday
+    if (isPast || isMonday) {
+      el.classList.add('disabled');
+    } else {
+      el.addEventListener('click', () => selectDate(d, el));
+    }
+    if (resDate && resDate.d === d && resDate.m === calMonth && resDate.y === calYear) el.classList.add('selected');
+    grid.appendChild(el);
+  }
+}
+function selectDate(d, el) {
+  document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  resDate = { d, m: calMonth, y: calYear };
+  updateStep1Btn();
+}
+function prevMonth() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  resDate = null;
+  renderCalendar();
+  updateStep1Btn();
+}
+function nextMonth() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  resDate = null;
+  renderCalendar();
+  updateStep1Btn();
+}
+
+// ── TIMES
+const allTimes = ['6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM','9:00 PM','9:30 PM','10:00 PM'];
+const unavailableTimes = ['7:00 PM','8:30 PM'];
+function renderTimes() {
+  const grid = document.getElementById('time-grid');
+  grid.innerHTML = '';
+  allTimes.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'time-btn' + (unavailableTimes.includes(t) ? ' unavailable' : '');
+    btn.textContent = t;
+    if (!unavailableTimes.includes(t)) {
+      btn.addEventListener('click', () => selectTime(t, btn));
+    }
+    if (resTime === t) btn.classList.add('selected');
+    grid.appendChild(btn);
+  });
+}
+function selectTime(t, btn) {
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  resTime = t;
+  updateStep1Btn();
+}
+function updateStep1Btn() {
+  document.getElementById('btn-next-1').disabled = !(resDate && resTime);
+}
+
+// ── GUESTS
+function changeGuests(delta) {
+  resGuests = Math.min(8, Math.max(1, resGuests + delta));
+  document.getElementById('guest-count').textContent = resGuests;
+}
+
+// ── STEPS
+function goStep(n) {
+  if (n === 3) {
+    // validate step 2 — nothing to validate
+  }
+  if (n === 4) {
+    const name = document.getElementById('res-name').value.trim();
+    const email = document.getElementById('res-email').value.trim();
+    if (!name || !email) { alert('Please enter your name and email to continue.'); return; }
+    buildSummary();
+  }
+  resStep = n;
+  goStepUI(n);
+}
+function goStepUI(n) {
+  document.querySelectorAll('.res-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + n).classList.add('active');
+  document.querySelectorAll('.res-step').forEach((s, i) => {
+    s.classList.remove('active','done');
+    if (i + 1 < n) s.classList.add('done');
+    else if (i + 1 === n) s.classList.add('active');
+  });
+}
+function buildSummary() {
+  const dateStr = resDate ? `${months[resDate.m]} ${resDate.d}, ${resDate.y}` : '';
+  const name = document.getElementById('res-name').value.trim();
+  const email = document.getElementById('res-email').value.trim();
+  const notes = document.getElementById('res-notes').value.trim();
+  document.getElementById('res-summary').innerHTML = `
+    <div class="res-summary-row"><span>Date</span><span>${dateStr}</span></div>
+    <div class="res-summary-row"><span>Time</span><span>${resTime}</span></div>
+    <div class="res-summary-row"><span>Guests</span><span>${resGuests} ${resGuests === 1 ? 'person' : 'people'}</span></div>
+    <div class="res-summary-row"><span>Name</span><span>${name}</span></div>
+    <div class="res-summary-row"><span>Email</span><span>${email}</span></div>
+    ${notes ? `<div class="res-summary-row"><span>Notes</span><span style="max-width:200px;text-align:right">${notes}</span></div>` : ''}
+  `;
+}
+function confirmReservation() {
+  const dateStr = resDate ? `${months[resDate.m]} ${resDate.d}, ${resDate.y}` : '';
+  const name = document.getElementById('res-name').value.trim();
+  document.getElementById('confirm-msg').innerHTML =
+    `<strong>${name}</strong>, your table for <strong>${resGuests}</strong> is confirmed for<br><strong>${dateStr}</strong> at <strong>${resTime}</strong>.<br><br>A confirmation has been sent to ${document.getElementById('res-email').value}.`;
+  goStepUI(5);
+  // Hide step indicators on success
+  document.querySelectorAll('.res-step').forEach(s => { s.classList.remove('active','done'); });
+}
+
+// ── FADE IN OBSERVER
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ── INIT
+renderCalendar();
+renderTimes();
+</script>
+</body>
+</html>
